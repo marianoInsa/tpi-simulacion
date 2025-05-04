@@ -302,7 +302,7 @@ Es importante destacar que pasar estas pruebas no garantiza que el generador sea
 
 ## Guía de Uso
 
-### 1. Generación de Números Pseudoaleatorios
+### Generación de Números Pseudoaleatorios
 
 Para generar una secuencia de números pseudoaleatorios usando el método congruencial mixto:
 
@@ -323,7 +323,7 @@ n = 100 # Cantidad de números a generar
 
 Los números generados se guardarán automáticamente en el archivo `numeros_aleatorios_metodo_mixto.csv`, un número por línea.
 
-### 2. Ejecución de Pruebas Estadísticas
+### Ejecución de Pruebas Estadísticas
 
 Una vez generado el archivo con los números pseudoaleatorios, puedes ejecutar todas las pruebas estadísticas a la vez mediante:
 
