@@ -23,7 +23,7 @@ Este proyecto implementa un generador de números pseudoaleatorios utilizando el
   - [Prueba de Uniformidad (Chi-cuadrada)](#prueba-de-uniformidad-chi-cuadrada)
   - [Prueba de Independencia (Poker)](#prueba-de-independencia-poker)
 - [Conclusiones de las Pruebas](#conclusiones-de-las-pruebas)
-- ## [Guía de Uso](#guía-de-uso)
+- [Guía de Uso](#guía-de-uso)
   - [Generación de Números Pseudoaleatorios](#generación-de-números-pseudoaleatorios)
   - [Ejecución de Pruebas Estadísticas](#ejecución-de-pruebas-estadísticas)
 
