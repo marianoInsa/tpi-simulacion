@@ -40,7 +40,9 @@ def prueba_de_varianza(numeros_aleatorios, alpha=0.05):
     # Estadístico de prueba
     estadistico = df * varianza_muestral / varianza_teorica
     
-    print("=== PRUEBA DE VARIANZA ===")
+    print("\n=== PRUEBA DE VARIANZA ===")
+    print("Hipótesis nula: La secuencia de números aleatorios tiene una varianza consistente con una distribución uniforme.")
+    print("Hipótesis alternativa: La secuencia de números aleatorios no tiene una varianza consistente con una distribución uniforme.")
     print(f"Varianza muestral: {varianza_muestral}")
     print(f"Varianza teórica: {varianza_teorica}")
     print(f"Estadístico de prueba: {estadistico}")
@@ -51,16 +53,19 @@ def prueba_de_varianza(numeros_aleatorios, alpha=0.05):
     
     # Verificar si la varianza está dentro de los límites de aceptación
     if limite_inferior <= varianza_muestral <= limite_superior:
-        print(f"Los números aleatorios cumplen con la prueba de varianza (nivel de confianza {(1-alpha)*100}%).")
+        print(f"\nCONCLUSIÓN PRUEBA DE VARIANZA: La secuencia pasa la prueba de varianza y puede considerarse aleatoria en términos de su dispersión (nivel de confianza {(1-alpha)*100}%).")
+        print(f"Se acepta la hipótesis nula {varianza_teorica} ≈ {varianza_muestral}.")
         resultado = True
     else:
-        print(f"Los números aleatorios NO cumplen con la prueba de varianza (nivel de confianza {(1-alpha)*100}%).")
+        print(f"\nCONCLUSIÓN PRUEBA DE VARIANZA: La secuencia no pasa la prueba de varianza. La dispersión no es consistente con una distribución uniforme. (nivel de confianza {(1-alpha)*100}%).")
+        print(f"Se rechaza la hipótesis nula {varianza_teorica} ≠ {varianza_muestral}.")
         resultado = False
         
     # Verificación alternativa con p-valor
+    print("\n=== VERIFICACIÓN CON P-VALOR ===")
     p_valor = 2 * min(stats.chi2.cdf(estadistico, df), 1 - stats.chi2.cdf(estadistico, df))
     print(f"P-valor de la prueba: {p_valor:.6f}")
-    print(f"Interpretación p-valor: {'Se acepta la hipótesis nula' if p_valor > alpha else 'Se rechaza la hipótesis nula'}")
+    print(f"Interpretación p-valor: {f'Se acepta la hipótesis nula ({p_valor:.6f} > {alpha})' if p_valor > alpha else f'Se rechaza la hipótesis nula ({p_valor:.6f} <= {alpha})'}")
     print("=== FIN DE LA PRUEBA DE VARIANZA ===")
     return resultado
 
@@ -73,12 +78,6 @@ if __name__ == "__main__":
         
         # Realizar la prueba de varianza
         resultado = prueba_de_varianza(numeros_aleatorios)
-        
-        # Mostrar resultado final
-        if resultado:
-            print("CONCLUSIÓN: La secuencia pasa la prueba de varianza y puede considerarse aleatoria en términos de su dispersión.")
-        else:
-            print("CONCLUSIÓN: La secuencia no pasa la prueba de varianza. La dispersión no es consistente con una distribución uniforme.")
             
     except FileNotFoundError:
         print("Error: No se encontró el archivo 'numeros_aleatorios_metodo_mixto.csv'.")

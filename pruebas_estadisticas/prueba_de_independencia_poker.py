@@ -1,10 +1,9 @@
 # Prueba estadística para números aleatorios
-# Descripción: Este script implementa la prueba de Poker para verificar la independencia
-# de una secuencia de números aleatorios.
+# Descripción: Este script implementa la cuarta prueba estadística, "Prueba de Poker" para verificar la independencia de una secuencia de números aleatorios.
 
-import numpy as np
+# import numpy as np
 from scipy import stats
-import math
+# import math
 from collections import Counter
 
 def obtener_patron_poker(grupo):
@@ -113,10 +112,12 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
     patrones_esperados = []
     nombres_patrones = []
     
-    print("\n=== Prueba de Poker ===")
+    print("\n=== PRUEBA POKER DE INDEPENDENCIA ===")
+    print("Hipótesis nula: La secuencia de números aleatorios es independiente.")
+    print("Hipótesis alternativa: La secuencia de números aleatorios no es independiente.")
     print(f"Tamaño del grupo: {tamano_grupo} dígitos")
     print(f"Número de grupos analizados: {n}")
-    print("\nTabla de frecuencias:")
+    print("=== Tabla de Frecuencias ===")
     print(f"{'Patrón':<20} {'Descripción':<20} {'Frec. Observada':<20} {'Frec. Esperada':<20} {'Contribución a Chi²':<20}")
     
     descripciones = {
@@ -162,7 +163,7 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
         nombres_patrones.append("Otros")
         chi_cuadrado += ((total_agrupado_obs - total_agrupado_esp) ** 2) / total_agrupado_esp
     
-    print("> Nota: Las categorías con frecuencia esperada < 5 se han agrupado para la prueba Chi-Cuadrado.")
+    print("*Nota: Las categorías con frecuencia esperada < 5 se han agrupado para la prueba Chi-Cuadrado.")
 
     # Grados de libertad (número de categorías - 1)
     df = len(patrones_observados) - 1
@@ -171,7 +172,7 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
     chi_cuadrado_critico = stats.chi2.ppf(1 - alpha, df)
     p_valor = 1 - stats.chi2.cdf(chi_cuadrado, df)
     
-    print(f"\nEstadístico Chi-Cuadrado: {chi_cuadrado:.4f}")
+    print(f"Estadístico Chi-Cuadrado: {chi_cuadrado:.4f}")
     print(f"Grados de libertad: {df}")
     print(f"Valor crítico (alpha={alpha}): {chi_cuadrado_critico:.4f}")
     print(f"P-valor: {p_valor:.6f}")
@@ -180,32 +181,32 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
     resultado = chi_cuadrado <= chi_cuadrado_critico
     
     if resultado:
-        print(f"\nRESULTADO: Se acepta la hipótesis nula (p-valor = {p_valor:.6f} > {alpha}).")
-        print("=== FIN DE LA PRUEBA DE POKER ===")
+        print("\nCONCLUSIÓN PRUEBA DE INDEPENDENCIA: La secuencia pasa la prueba de independencia de Poker, lo que sugiere que los números son aleatorios.")
+        print(f"RESULTADO: Se acepta la hipótesis nula (p-valor = {p_valor:.6f} > {alpha}).")
     else:
-        print(f"\nRESULTADO: Se rechaza la hipótesis nula (p-valor = {p_valor:.6f} < {alpha}).")
-        print("=== FIN DE LA PRUEBA DE POKER ===")
-    
+        print("\nCONCLUSIÓN PRUEBA DE INDEPENDENCIA: La secuencia no pasa la prueba de independencia de Poker, lo que sugiere que los números no son aleatorios.")
+        print(f"RESULTADO: Se rechaza la hipótesis nula (p-valor = {p_valor:.6f} < {alpha}).")
+    print("=== FIN DE LA PRUEBA DE INDEPENDENCIA ===")
     return resultado
 
 # Función auxiliar para mostrar ejemplos de patrones
-def mostrar_ejemplos_patrones():
-    """
-    Muestra ejemplos de los diferentes patrones de poker para ayudar a entender la prueba.
-    """
-    ejemplos = {
-        "TD": ["12345", "98765", "13579"],  # Todos Diferentes
-        "1P": ["11234", "12234", "12334", "12344"],  # Un Par
-        "2P": ["11224", "11233", "12233"],  # Dos Pares
-        "T": ["11123", "12222", "33321"],  # Tercia
-        "TP": ["11122", "22233", "33322"],  # Tercia y Par (Full House)
-        "P": ["11112", "22221", "33334"],  # Poker
-        "Q": ["11111", "22222", "33333"]   # Quintilla
-    }
+# def mostrar_ejemplos_patrones():
+#     """
+#     Muestra ejemplos de los diferentes patrones de poker para ayudar a entender la prueba.
+#     """
+#     ejemplos = {
+#         "TD": ["12345", "98765", "13579"],  # Todos Diferentes
+#         "1P": ["11234", "12234", "12334", "12344"],  # Un Par
+#         "2P": ["11224", "11233", "12233"],  # Dos Pares
+#         "T": ["11123", "12222", "33321"],  # Tercia
+#         "TP": ["11122", "22233", "33322"],  # Tercia y Par (Full House)
+#         "P": ["11112", "22221", "33334"],  # Poker
+#         "Q": ["11111", "22222", "33333"]   # Quintilla
+#     }
     
-    print("\n=== Ejemplos de Patrones de Poker ===")
-    for patron, ejemplos_lista in ejemplos.items():
-        print(f"{patron} - {', '.join(ejemplos_lista)}")
+#     print("\n=== Ejemplos de Patrones de Poker ===")
+#     for patron, ejemplos_lista in ejemplos.items():
+#         print(f"{patron} - {', '.join(ejemplos_lista)}")
 
 # Ejemplo de uso
 if __name__ == "__main__":
@@ -215,15 +216,10 @@ if __name__ == "__main__":
             numeros_aleatorios = [float(line.strip()) for line in f]
         
         # Mostrar ejemplos de patrones para mejor comprensión
-        mostrar_ejemplos_patrones()
+        # mostrar_ejemplos_patrones()
         
         # Realizar la prueba de Poker
         resultado = prueba_poker(numeros_aleatorios, tamano_grupo=5)
-
-        if resultado:
-            print("CONCLUSIÓN: La secuencia pasa la prueba de independencia de Poker, lo que sugiere que los números son aleatorios.")
-        else:
-            print("CONCLUSIÓN: La secuencia no pasa la prueba de independencia de Poker, lo que sugiere que los números no son aleatorios.")
         
     except FileNotFoundError:
         print("Error: No se encontró el archivo 'numeros_aleatorios_metodo_mixto.csv'.")
