@@ -4,7 +4,7 @@
 import numpy as np
 from scipy import stats
 
-def prueba_de_varianza(numeros_aleatorios, alpha=0.05):
+def prueba_de_varianza(numeros_aleatorios, alpha=0.05, verbose=True):
     """
     Realiza la prueba de varianza para determinar si un conjunto de números aleatorios
     tiene una varianza consistente con una distribución uniforme entre 0 y 1.
@@ -39,34 +39,37 @@ def prueba_de_varianza(numeros_aleatorios, alpha=0.05):
     
     # Estadístico de prueba
     estadistico = df * varianza_muestral / varianza_teorica
-    
-    print("\n=== PRUEBA DE VARIANZA ===")
-    print("Hipótesis nula: La secuencia de números aleatorios tiene una varianza consistente con una distribución uniforme.")
-    print("Hipótesis alternativa: La secuencia de números aleatorios no tiene una varianza consistente con una distribución uniforme.")
-    print(f"Varianza muestral: {varianza_muestral}")
-    print(f"Varianza teórica: {varianza_teorica}")
-    print(f"Estadístico de prueba: {estadistico}")
-    print(f"Grados de libertad: {df}")
-    print(f"Valores críticos chi-cuadrado: [{chi2_inferior:.4f}, {chi2_superior:.4f}]")
-    print(f"Límite inferior de varianza: {limite_inferior:.6f}")
-    print(f"Límite superior de varianza: {limite_superior:.6f}")
+    if verbose:
+        print("\n=== PRUEBA DE VARIANZA ===")
+        print("Hipótesis nula: La secuencia de números aleatorios tiene una varianza consistente con una distribución uniforme.")
+        print("Hipótesis alternativa: La secuencia de números aleatorios no tiene una varianza consistente con una distribución uniforme.")
+        print(f"Varianza muestral: {varianza_muestral}")
+        print(f"Varianza teórica: {varianza_teorica}")
+        print(f"Estadístico de prueba: {estadistico}")
+        print(f"Grados de libertad: {df}")
+        print(f"Valores críticos chi-cuadrado: [{chi2_inferior:.4f}, {chi2_superior:.4f}]")
+        print(f"Límite inferior de varianza: {limite_inferior:.6f}")
+        print(f"Límite superior de varianza: {limite_superior:.6f}")
     
     # Verificar si la varianza está dentro de los límites de aceptación
     if limite_inferior <= varianza_muestral <= limite_superior:
-        print(f"\nCONCLUSIÓN PRUEBA DE VARIANZA: La secuencia pasa la prueba de varianza y puede considerarse aleatoria en términos de su dispersión (nivel de confianza {(1-alpha)*100}%).")
-        print(f"Se acepta la hipótesis nula {varianza_teorica} ≈ {varianza_muestral}.")
+        if verbose:
+            print(f"\nCONCLUSIÓN PRUEBA DE VARIANZA: La secuencia pasa la prueba de varianza y puede considerarse aleatoria en términos de su dispersión (nivel de confianza {(1-alpha)*100}%).")
+            print(f"Se acepta la hipótesis nula {varianza_teorica} ≈ {varianza_muestral}.")
         resultado = True
     else:
-        print(f"\nCONCLUSIÓN PRUEBA DE VARIANZA: La secuencia no pasa la prueba de varianza. La dispersión no es consistente con una distribución uniforme. (nivel de confianza {(1-alpha)*100}%).")
-        print(f"Se rechaza la hipótesis nula {varianza_teorica} ≠ {varianza_muestral}.")
+        if verbose:
+            print(f"\nCONCLUSIÓN PRUEBA DE VARIANZA: La secuencia no pasa la prueba de varianza. La dispersión no es consistente con una distribución uniforme. (nivel de confianza {(1-alpha)*100}%).")
+            print(f"Se rechaza la hipótesis nula {varianza_teorica} ≠ {varianza_muestral}.")
         resultado = False
         
     # Verificación alternativa con p-valor
-    print("\n=== VERIFICACIÓN CON P-VALOR ===")
-    p_valor = 2 * min(stats.chi2.cdf(estadistico, df), 1 - stats.chi2.cdf(estadistico, df))
-    print(f"P-valor de la prueba: {p_valor:.6f}")
-    print(f"Interpretación p-valor: {f'Se acepta la hipótesis nula ({p_valor:.6f} > {alpha})' if p_valor > alpha else f'Se rechaza la hipótesis nula ({p_valor:.6f} <= {alpha})'}")
-    print("=== FIN DE LA PRUEBA DE VARIANZA ===")
+    if verbose:
+        print("\n=== VERIFICACIÓN CON P-VALOR ===")
+        p_valor = 2 * min(stats.chi2.cdf(estadistico, df), 1 - stats.chi2.cdf(estadistico, df))
+        print(f"P-valor de la prueba: {p_valor:.6f}")
+        print(f"Interpretación p-valor: {f'Se acepta la hipótesis nula ({p_valor:.6f} > {alpha})' if p_valor > alpha else f'Se rechaza la hipótesis nula ({p_valor:.6f} <= {alpha})'}")
+        print("=== FIN DE LA PRUEBA DE VARIANZA ===")
     return resultado
 
 # Ejemplo de uso

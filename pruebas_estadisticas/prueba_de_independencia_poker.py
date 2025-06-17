@@ -72,7 +72,7 @@ def probabilidades_poker_teoricas(tamano_grupo=5):
         # Para otros tamaños de grupo, sería necesario calcular las probabilidades
         raise ValueError(f"No hay probabilidades teóricas implementadas para grupos de tamaño {tamano_grupo}")
 
-def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
+def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05,verbose=True):
     """
     Realiza la prueba de Poker para determinar la independencia de un conjunto de números aleatorios.
     
@@ -111,14 +111,14 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
     patrones_observados = []
     patrones_esperados = []
     nombres_patrones = []
-    
-    print("\n=== PRUEBA POKER DE INDEPENDENCIA ===")
-    print("Hipótesis nula: La secuencia de números aleatorios es independiente.")
-    print("Hipótesis alternativa: La secuencia de números aleatorios no es independiente.")
-    print(f"Tamaño del grupo: {tamano_grupo} dígitos")
-    print(f"Número de grupos analizados: {n}")
-    print("=== Tabla de Frecuencias ===")
-    print(f"{'Patrón':<20} {'Descripción':<20} {'Frec. Observada':<20} {'Frec. Esperada':<20} {'Contribución a Chi²':<20}")
+    if verbose:
+        print("\n=== PRUEBA POKER DE INDEPENDENCIA ===")
+        print("Hipótesis nula: La secuencia de números aleatorios es independiente.")
+        print("Hipótesis alternativa: La secuencia de números aleatorios no es independiente.")
+        print(f"Tamaño del grupo: {tamano_grupo} dígitos")
+        print(f"Número de grupos analizados: {n}")
+        print("=== Tabla de Frecuencias ===")
+        print(f"{'Patrón':<20} {'Descripción':<20} {'Frec. Observada':<20} {'Frec. Esperada':<20} {'Contribución a Chi²':<20}")
     
     descripciones = {
         "TD": "Todos Diferentes",
@@ -145,10 +145,11 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
             # Contribución al estadístico chi-cuadrado
             contribucion = ((observada - esperada) ** 2) / esperada
             chi_cuadrado += contribucion
-            
-            print(f"{patron:<20} {descripciones.get(patron, ''):<20} {observada:<20} {esperada:.2f} {' '*10} {contribucion:.4f}")
+            if verbose:
+                print(f"{patron:<20} {descripciones.get(patron, ''):<20} {observada:<20} {esperada:.2f} {' '*10} {contribucion:.4f}")
         else:
-            print(f"{patron:<20} {descripciones.get(patron, ''):<20} {observada:<20} {esperada:.2f} {' '*10} {'Agrupado* ':<20}")
+            if verbose:
+                print(f"{patron:<20} {descripciones.get(patron, ''):<20} {observada:<20} {esperada:.2f} {' '*10} {'Agrupado* ':<20}")
     
     # Agrupar categorías con frecuencias esperadas pequeñas
     # En este ejemplo, agrupamos las categorías con esperados < 5
@@ -156,14 +157,16 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
     total_agrupado_esp = sum(esp for esp in freq_esperadas.values() if esp < 5)
     
     if total_agrupado_esp >= 5:
-        print(f"{'Otros':<20} {'Categorías agrupadas':<20} {total_agrupado_obs:<20} {total_agrupado_esp:.2f} {' '*10} "
-              f"{((total_agrupado_obs - total_agrupado_esp) ** 2) / total_agrupado_esp:.4f}")
+        if verbose:
+            print(f"{'Otros':<20} {'Categorías agrupadas':<20} {total_agrupado_obs:<20} {total_agrupado_esp:.2f} {' '*10} "
+                f"{((total_agrupado_obs - total_agrupado_esp) ** 2) / total_agrupado_esp:.4f}")
+            
         patrones_observados.append(total_agrupado_obs)
         patrones_esperados.append(total_agrupado_esp)
         nombres_patrones.append("Otros")
         chi_cuadrado += ((total_agrupado_obs - total_agrupado_esp) ** 2) / total_agrupado_esp
-    
-    print("*Nota: Las categorías con frecuencia esperada < 5 se han agrupado para la prueba Chi-Cuadrado.")
+        if verbose:
+            print("*Nota: Las categorías con frecuencia esperada < 5 se han agrupado para la prueba Chi-Cuadrado.")
 
     # Grados de libertad (número de categorías - 1)
     df = len(patrones_observados) - 1
@@ -171,22 +174,22 @@ def prueba_poker(numeros_aleatorios, tamano_grupo=5, alpha=0.05):
     # Valor crítico y p-valor
     chi_cuadrado_critico = stats.chi2.ppf(1 - alpha, df)
     p_valor = 1 - stats.chi2.cdf(chi_cuadrado, df)
-    
-    print(f"Estadístico Chi-Cuadrado: {chi_cuadrado:.4f}")
-    print(f"Grados de libertad: {df}")
-    print(f"Valor crítico (alpha={alpha}): {chi_cuadrado_critico:.4f}")
-    print(f"P-valor: {p_valor:.6f}")
+    if verbose:
+        print(f"Estadístico Chi-Cuadrado: {chi_cuadrado:.4f}")
+        print(f"Grados de libertad: {df}")
+        print(f"Valor crítico (alpha={alpha}): {chi_cuadrado_critico:.4f}")
+        print(f"P-valor: {p_valor:.6f}")
     
     # Verificar si la prueba pasa o no
     resultado = chi_cuadrado <= chi_cuadrado_critico
-    
-    if resultado:
-        print("\nCONCLUSIÓN PRUEBA DE INDEPENDENCIA: La secuencia pasa la prueba de independencia de Poker, lo que sugiere que los números son aleatorios.")
-        print(f"RESULTADO: Se acepta la hipótesis nula (p-valor = {p_valor:.6f} > {alpha}).")
-    else:
-        print("\nCONCLUSIÓN PRUEBA DE INDEPENDENCIA: La secuencia no pasa la prueba de independencia de Poker, lo que sugiere que los números no son aleatorios.")
-        print(f"RESULTADO: Se rechaza la hipótesis nula (p-valor = {p_valor:.6f} < {alpha}).")
-    print("=== FIN DE LA PRUEBA DE INDEPENDENCIA ===")
+    if verbose:
+        if resultado:
+            print("\nCONCLUSIÓN PRUEBA DE INDEPENDENCIA: La secuencia pasa la prueba de independencia de Poker, lo que sugiere que los números son aleatorios.")
+            print(f"RESULTADO: Se acepta la hipótesis nula (p-valor = {p_valor:.6f} > {alpha}).")
+        else:
+            print("\nCONCLUSIÓN PRUEBA DE INDEPENDENCIA: La secuencia no pasa la prueba de independencia de Poker, lo que sugiere que los números no son aleatorios.")
+            print(f"RESULTADO: Se rechaza la hipótesis nula (p-valor = {p_valor:.6f} < {alpha}).")
+        print("=== FIN DE LA PRUEBA DE INDEPENDENCIA ===")
     return resultado
 
 # Función auxiliar para mostrar ejemplos de patrones

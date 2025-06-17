@@ -4,7 +4,7 @@
 import numpy as np
 from scipy import stats
 
-def prueba_de_medias(numeros_aleatorios, alpha=0.05):
+def prueba_de_medias(numeros_aleatorios, alpha=0.05, verbose=True):
     """
     Realiza la prueba de medias para determinar si un conjunto de números aleatorios
     sigue una distribución uniforme entre 0 y 1.
@@ -35,25 +35,27 @@ def prueba_de_medias(numeros_aleatorios, alpha=0.05):
     # Calcular los límites de aceptación
     limite_inferior = media_esperada - z_critico * error_estandar
     limite_superior = media_esperada + z_critico * error_estandar
-    
-    print("\n=== PRUEBA DE MEDIAS ===")
-    print("Hipótesis nula: La secuencia de números aleatorios tiene una media igual a 0.5.")
-    print("Hipótesis alternativa: La secuencia de números aleatorios no tiene una media igual a 0.5.")
-    print(f"Media calculada: {media}")
-    print(f"Media esperada: {media_esperada}")
-    print(f"Límite inferior: {limite_inferior}")
-    print(f"Límite superior: {limite_superior}")
+    if verbose:
+        print("\n=== PRUEBA DE MEDIAS ===")
+        print("Hipótesis nula: La secuencia de números aleatorios tiene una media igual a 0.5.")
+        print("Hipótesis alternativa: La secuencia de números aleatorios no tiene una media igual a 0.5.")
+        print(f"Media calculada: {media}")
+        print(f"Media esperada: {media_esperada}")
+        print(f"Límite inferior: {limite_inferior}")
+        print(f"Límite superior: {limite_superior}")
     
     # Verificar si la media está dentro de los límites de aceptación
     if limite_inferior <= media <= limite_superior:
-        print(f"CONCLUSIÓN PRUEBA DE MEDIAS: La secuencia pasa la prueba de medias y puede considerarse aleatoria en términos de su media (nivel de confianza {(1-alpha)*100}%).")
-        print(f"Se acepta la hipótesis nula {media_esperada} ≈ {media}.")
-        print("=== FIN DE LA PRUEBA DE MEDIAS ===")
+        if verbose:
+            print(f"CONCLUSIÓN PRUEBA DE MEDIAS: La secuencia pasa la prueba de medias y puede considerarse aleatoria en términos de su media (nivel de confianza {(1-alpha)*100}%).")
+            print(f"Se acepta la hipótesis nula {media_esperada} ≈ {media}.")
+            print("=== FIN DE LA PRUEBA DE MEDIAS ===")
         return True
     else:
-        print(f"\nCONCLUSIÓN PRUEBA DE MEDIAS: La secuencia no pasa la prueba de medias. La distribución no es uniforme en términos de su media. (nivel de confianza {(1-alpha)*100}%).")
-        print(f"Se rechaza la hipótesis nula {media_esperada} ≠ {media}.")
-        print("=== FIN DE LA PRUEBA DE MEDIAS ===")
+        if verbose:
+            print(f"\nCONCLUSIÓN PRUEBA DE MEDIAS: La secuencia no pasa la prueba de medias. La distribución no es uniforme en términos de su media. (nivel de confianza {(1-alpha)*100}%).")
+            print(f"Se rechaza la hipótesis nula {media_esperada} ≠ {media}.")
+            print("=== FIN DE LA PRUEBA DE MEDIAS ===")
         return False
 
 # Ejemplo de uso
