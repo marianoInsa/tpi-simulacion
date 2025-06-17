@@ -1,3 +1,13 @@
+# Ignorar todas las carpetas __pycache__
+__pycache__/
+**/__pycache__/
+
+# Ignorar archivos .pyc (compilados de Python)
+*.pyc
+
+# Ignorar entornos virtuales
+env/
 env-tpi/
-_pycache_/
-__init__
+
+# Ignorar archivos CSV específicos
+#numeros_aleatorios_metodo_mixto.csv
