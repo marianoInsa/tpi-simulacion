@@ -4,7 +4,7 @@
 import numpy as np
 from scipy import stats
 
-def prueba_chi_cuadrada(numeros_aleatorios, num_intervalos=10, alpha=0.05):
+def prueba_chi_cuadrada(numeros_aleatorios, num_intervalos=10, alpha=0.05, verbose = True):
     """
     Realiza la prueba Chi-Cuadrada para determinar si un conjunto de números aleatorios
     sigue una distribución uniforme.
@@ -22,9 +22,11 @@ def prueba_chi_cuadrada(numeros_aleatorios, num_intervalos=10, alpha=0.05):
     
     # Verificar que tenemos suficientes datos para el número de intervalos
     if n < 5 * num_intervalos:
-        print(f"ADVERTENCIA: Se recomienda tener al menos {5 * num_intervalos} observaciones para {num_intervalos} intervalos.")
+        if verbose:
+            print(f"ADVERTENCIA: Se recomienda tener al menos {5 * num_intervalos} observaciones para {num_intervalos} intervalos.")
         if n < num_intervalos:
-            print("ERROR: Número insuficiente de datos para realizar la prueba.")
+            if verbose:
+                print("ERROR: Número insuficiente de datos para realizar la prueba.")
             return False
     
     # Frecuencia esperada en cada intervalo (distribución uniforme)
@@ -47,36 +49,36 @@ def prueba_chi_cuadrada(numeros_aleatorios, num_intervalos=10, alpha=0.05):
     p_valor = 1 - stats.chi2.cdf(chi_cuadrado, df)
     
     # Mostrar resultados
-    print(f"\n=== PRUEBA CHI-CUADRADA DE UNIFORMIDAD ===")
-    print("Hipótesis nula: La secuencia de números aleatorios sigue una distribución uniforme.")
-    print("Hipótesis alternativa: La secuencia de números aleatorios no sigue una distribución uniforme.")
-    print(f"Número de datos: {n}")
-    print(f"Número de intervalos: {num_intervalos}")
-    print(f"Frecuencia esperada por intervalo: {frecuencia_esperada:.2f}")
-    print(f"Estadístico Chi-Cuadrado: {chi_cuadrado:.4f}")
-    print(f"Grados de libertad: {df}")
-    print(f"Valor crítico (alpha={alpha}): {chi_cuadrado_critico:.4f}")
-    print(f"P-valor: {p_valor:.6f}")
-    
-    # Mostrar tabla de frecuencias
-    print("=== Tabla de Frecuencias ===")
-    print(f"{'Intervalo':<15} {'Frec. Observada':<20} {'Frec. Esperada':<20} {'Diferencia':<15} {'Contribución a Chi²':<20}")
-    for i in range(num_intervalos):
-        intervalo = f"[{bordes[i]:.2f}, {bordes[i+1]:.2f})"
-        contribucion = ((frecuencias_observadas[i] - frecuencia_esperada) ** 2) / frecuencia_esperada
-        print(f"{intervalo:<15} {frecuencias_observadas[i]:<20} {frecuencia_esperada:.2f} {' '*10} "
-              f"{frecuencias_observadas[i] - frecuencia_esperada:+.2f} {' '*10} {contribucion:.4f}")
-    print("="*80)
+    if verbose:
+        print(f"\n=== PRUEBA CHI-CUADRADA DE UNIFORMIDAD ===")
+        print("Hipótesis nula: La secuencia de números aleatorios sigue una distribución uniforme.")
+        print("Hipótesis alternativa: La secuencia de números aleatorios no sigue una distribución uniforme.")
+        print(f"Número de datos: {n}")
+        print(f"Número de intervalos: {num_intervalos}")
+        print(f"Frecuencia esperada por intervalo: {frecuencia_esperada:.2f}")
+        print(f"Estadístico Chi-Cuadrado: {chi_cuadrado:.4f}")
+        print(f"Grados de libertad: {df}")
+        print(f"Valor crítico (alpha={alpha}): {chi_cuadrado_critico:.4f}")
+        print(f"P-valor: {p_valor:.6f}")
+        # Mostrar tabla de frecuencias
+        print("=== Tabla de Frecuencias ===")
+        print(f"{'Intervalo':<15} {'Frec. Observada':<20} {'Frec. Esperada':<20} {'Diferencia':<15} {'Contribución a Chi²':<20}")
+        for i in range(num_intervalos):
+            intervalo = f"[{bordes[i]:.2f}, {bordes[i+1]:.2f})"
+            contribucion = ((frecuencias_observadas[i] - frecuencia_esperada) ** 2) / frecuencia_esperada
+            print(f"{intervalo:<15} {frecuencias_observadas[i]:<20} {frecuencia_esperada:.2f} {' '*10} "
+                f"{frecuencias_observadas[i] - frecuencia_esperada:+.2f} {' '*10} {contribucion:.4f}")
+        print("="*80)
     # Verificar si la prueba pasa o no
     resultado = chi_cuadrado <= chi_cuadrado_critico
-    
-    if resultado:
-        print("\nCONCLUSIÓN PRUEBA DE UNIFORMIDAD: La secuencia pasa la prueba Chi-Cuadrada de uniformidad, siguiendo una distribución uniforme.")
-        print(f"Se acepta la hipótesis nula (p-valor = {p_valor:.6f} > {alpha}).")
-    else:
-        print("\nCONCLUSIÓN PRUEBA DE UNIFORMIDAD: La secuencia NO pasa la prueba Chi-Cuadrada de uniformidad, y no sigue una distribución uniforme.")
-        print(f"Se rechaza la hipótesis nula (p-valor = {p_valor:.6f} < {alpha}).")
-    print("=== FIN DE LA PRUEBA DE UNIFORMIDAD ===")
+    if verbose:
+        if resultado:
+            print("\nCONCLUSIÓN PRUEBA DE UNIFORMIDAD: La secuencia pasa la prueba Chi-Cuadrada de uniformidad, siguiendo una distribución uniforme.")
+            print(f"Se acepta la hipótesis nula (p-valor = {p_valor:.6f} > {alpha}).")
+        else:
+            print("\nCONCLUSIÓN PRUEBA DE UNIFORMIDAD: La secuencia NO pasa la prueba Chi-Cuadrada de uniformidad, y no sigue una distribución uniforme.")
+            print(f"Se rechaza la hipótesis nula (p-valor = {p_valor:.6f} < {alpha}).")
+        print("=== FIN DE LA PRUEBA DE UNIFORMIDAD ===")
     return resultado
 
 # Ejemplo de uso
