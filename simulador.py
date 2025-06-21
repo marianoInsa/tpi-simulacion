@@ -77,7 +77,7 @@ def gen_var_value(num_aleatorio, fecha_actual):
 
 
 # --- 6. FUNCIÓN PRINCIPAL DE LA SIMULACIÓN (ACTUALIZADA) ---
-def iniciar_simulacion_rotiseria():
+def genera_demanda_diaria(dias_a_simular):
     """
     Punto de entrada principal. Pide fechas, calcula duración, genera números
     y ejecuta la simulación día por día.
@@ -88,21 +88,7 @@ def iniciar_simulacion_rotiseria():
 
     # --- OBTENER FECHAS Y CALCULAR DURACIÓN ---
     fecha_inicio = date.today()
-    
-    while True:
-        try:
-            input_fecha_fin = input(f"La simulación comenzará hoy ({fecha_inicio.strftime('%Y-%m-%d')}).\nIngrese la fecha de fin (YYYY-MM-DD): ")
-            fecha_fin = datetime.strptime(input_fecha_fin, '%Y-%m-%d').date()
-            if fecha_fin <= fecha_inicio:
-                print("Error: La fecha de fin debe ser posterior a la fecha de inicio. Intente de nuevo.")
-                continue
-            break
-        except ValueError:
-            print("Error: Formato de fecha incorrecto. Use YYYY-MM-DD. Intente de nuevo.")
-
-    delta = fecha_fin - fecha_inicio
-    dias_a_simular = delta.days + 1  # +1 para incluir el último día
-
+    fecha_fin = fecha_inicio + timedelta(days=dias_a_simular)
     print(f"\nSimulación desde {fecha_inicio.strftime('%d/%m/%Y')} hasta {fecha_fin.strftime('%d/%m/%Y')}.")
     print(f"Duración total: {dias_a_simular} días.")
     
@@ -152,7 +138,7 @@ def iniciar_simulacion_rotiseria():
     # print("\nResumen de resultados:")
     # for res in resultados_simulacion:
     #     print(res)
-
+    return resultados_simulacion
 
 if __name__ == "__main__":
-    iniciar_simulacion_rotiseria()
+    genera_demanda_diaria(50)
