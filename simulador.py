@@ -4,6 +4,11 @@ import time
 import numpy as np
 import math
 from datetime import datetime, date, timedelta
+# --- 0. DEFINICION DE CONSTANTES ---
+COSTO_VP = 300
+COSTO_SB = 600
+BENEFICIO = 300
+
 
 
 # --- 1. IMPORTAR TUS MÓDULOS (Sin cambios) ---
