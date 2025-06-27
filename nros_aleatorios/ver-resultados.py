@@ -1,9 +1,14 @@
 
 import csv
+from generador_congruencial_mixtov2 import main
 
 csv_file = 'resultados.csv'
 
 rows = []
+
+print("generating stuff")
+main()  # Call the main function to generate the CSV file
+print("reading results from CSV")
 
 # Read CSV and compute interval length
 with open(csv_file, newline='') as f:
