@@ -62,21 +62,16 @@ def generador_weekday(nros):
     """formula: 77*x+4
     va entre 4 y 81
     """
-    return [round(77 * x) + 4 for x in nros]
+    return [math.floor(77 * x) + 4 for x in nros]
 
 def generador_weekend(nros):
     """formula: 90x+18
     va entre 18 y 108
     """
-    return [round(90 * x) + 18 for x in nros]
+    return [math.floor(90 * x) + 18 for x in nros]
 
-def generar_dias_demanda(seed, a, c, m, n):
-    return generador_nros_aleatorios(seed, a, c, m, n)
-
-# Ejemplo de uso
-
-def main():
-
+def iterate(produccion,iteraciones, generador_var_al):
+    
     with open('resultados.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         
@@ -100,35 +95,22 @@ def main():
         # falta verificar si pasan los tests
 
 
-
-        produccion_weekday = [x for x in range(4, 82)]
-        produccion_weekday = [x for x in range(10, 40)]
-        produccion_weekend = [x for x in range(18, 108)]
-
         precio_faltante = 3
         precio_sobrante = 7
         precio_venta = 10
 
-        iteraciones = 1000
         alpha = 0.1
 
-        for p in produccion_weekday:
-
-            beneficio_ideal = 0
-            costo_f = 0
-            costo_s = 0
-
-            unidades_d = 0
-
-            unidades_f = 0
-            unidades_s = 0
+        for p in produccion:
 
             mylist = []
 
             for _ in range (iteraciones):
                 seed = random.randint(1,10000) 
                 dias_demanda = generador_nros_aleatorios(seed, a, c, m, n)
-                unidades_demanda = generador_weekday(dias_demanda)
+                unidades_demanda = generador_var_al(dias_demanda)
+
+                # acumuladores en 0
                 unidades_sobrante = 0
                 unidades_faltante = 0
 
@@ -138,10 +120,8 @@ def main():
                     elif d > p:
                         unidades_faltante += d - p
 
+                # acumular unidades
                 unidades_d = reduce(lambda x, y: x+y, unidades_demanda)
-
-                # unidades_f += unidades_faltante
-                # unidades_s += unidades_sobrante
 
                 beneficio_ideal = unidades_d * precio_venta
 
@@ -172,6 +152,17 @@ def main():
                     ])
 
         print("terminaron las ", iteraciones, " iteraciones")
+
+
+def main():
+
+
+    produccion_weekday = [x for x in range(4, 82)]
+    # produccion_weekday = [x for x in range(22, 31)]
+    produccion_weekend = [x for x in range(41, 48)]
+    iterate(produccion_weekend, iteraciones=10_000_000, generador_var_al=generador_weekend)
+    iterate(produccion_weekday, iteraciones=10_000_000, generador_var_al=generador_weekday)
+
                  
 
 
@@ -179,3 +170,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

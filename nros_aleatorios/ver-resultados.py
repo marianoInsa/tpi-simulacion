@@ -6,9 +6,8 @@ csv_file = 'resultados.csv'
 
 rows = []
 
-print("generating stuff")
+print("Comienza simulacion")
 main()  # Call the main function to generate the CSV file
-print("reading results from CSV")
 
 # Read CSV and compute interval length
 with open(csv_file, newline='') as f:
@@ -38,7 +37,7 @@ with open(csv_file, newline='') as f:
 rows.sort(key=lambda x: (-x['beneficio_prom']))
 
 # Print top 5
-print("Top 5 valores de p por beneficio_prom y menor intervalo:\n")
+print("Top 5 valores de p por beneficio_prom:\n")
 for i, row in enumerate(rows[:5], start=1):
     print(f"{i}. p = {row['p']}, beneficio_prom = {row['beneficio_prom']:.2f}, "
           f"intervalo = [{row['lower']:.2f}, {row['upper']:.2f}] "
