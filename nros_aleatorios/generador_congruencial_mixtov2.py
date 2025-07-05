@@ -30,7 +30,7 @@ def generador_weekend(nros):
 
 # --- PASO 1: Crear una función "trabajadora" para un solo valor de 'p' ---
 # Esta función contiene la lógica del bucle de simulaciones.
-def simular_para_un_p(p, iteraciones, generador_var_al):
+def simular_para_un_p(p, generador_var_al):
     """
     Realiza la simulación completa para un único valor de producción 'p'.
     Esta función será ejecutada en paralelo por diferentes procesos.
@@ -45,7 +45,10 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     precio_faltante = 3
     precio_sobrante = 7
     precio_venta = 10
-    alpha = 0.1
+    alpha = 0.05
+    iteraciones = 100_000
+
+    print(f"\nIniciando simulación con {iteraciones} iteraciones...")
 
     beneficios_obtenidos = []
 
@@ -85,18 +88,18 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     return [p, beneficio_prom, stddev, delta, lower, upper]
 
 # --- PASO 2: Crear una función que orquesta la ejecución en paralelo ---
-def ejecutar_simulacion_paralela(produccion, iteraciones, generador_var_al, nombre_archivo):
+def ejecutar_simulacion_paralela(produccion, generador_var_al, nombre_archivo):
     """
     Ejecuta las simulaciones en paralelo para una lista de valores de producción
     y guarda los resultados en un archivo CSV.
     """
-    print(f"\nIniciando simulación para {nombre_archivo} con {iteraciones} iteraciones...")
+    print(f"\nIniciando simulación para {nombre_archivo}")
     num_nucleos = multiprocessing.cpu_count()
     print(f"Utilizando {num_nucleos} núcleos de CPU.")
 
     # Usamos functools.partial para "fijar" los argumentos que no cambian en nuestra función trabajadora.
     # `pool.map` solo puede pasar un argumento iterable (los valores de 'p').
-    funcion_trabajadora = partial(simular_para_un_p, iteraciones=iteraciones, generador_var_al=generador_var_al)
+    funcion_trabajadora = partial(simular_para_un_p, generador_var_al=generador_var_al)
 
     # Creamos el pool de procesos
     with multiprocessing.Pool(processes=num_nucleos) as pool:
@@ -115,9 +118,6 @@ def ejecutar_simulacion_paralela(produccion, iteraciones, generador_var_al, nomb
 def main():
     inicio_total = time.time()
     
-    # Para la simulación real con 10 millones de iteraciones:
-    iteraciones_simulacion = 1_000_000
-    
     # Para una prueba rápida, puedes reducir el número de iteraciones:
     # iteraciones_simulacion = 10_000 
 
@@ -130,7 +130,7 @@ def main():
     # --- Simulación para Weekend ---
     produccion_weekend = [x*6 for x in range(1,19)]
     # produccion_weekend = [x for x in range(41, 48)] # Para pruebas
-    ejecutar_simulacion_paralela(produccion_weekend, iteraciones=iteraciones_simulacion, 
+    ejecutar_simulacion_paralela(produccion_weekend, 
                                  generador_var_al=generador_weekend, nombre_archivo='resultados_weekend.csv')
 
     fin_total = time.time()
