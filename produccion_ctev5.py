@@ -6,7 +6,7 @@ import math
 import random
 import multiprocessing
 import time
-
+from simulador import generar_numeros_aprobados
 # --- Las funciones originales no necesitan cambios ---
 
 def generador_nros_aleatorios(seed, a, c, m, n):
@@ -36,9 +36,7 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     Esta función será ejecutada en paralelo por diferentes procesos.
     """
     # Parámetros del generador (se pueden pasar como argumentos si es necesario)
-    a = 16807
-    c = 0
-    m = 2**31 - 1
+
     n_dias = 30  # n es el número de días a simular por iteración
 
     # Parámetros del modelo de negocio
@@ -50,8 +48,7 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     beneficios_obtenidos = []
 
     for _ in range(iteraciones):
-        seed = random.randint(1, 10000)
-        dias_demanda = generador_nros_aleatorios(seed, a, c, m, n_dias)
+        dias_demanda = generar_numeros_aprobados(n_dias)
         unidades_demanda = generador_var_al(dias_demanda)
 
         unidades_sobrante = 0
@@ -116,7 +113,7 @@ def main():
     inicio_total = time.time()
     
     # Para la simulación real con 10 millones de iteraciones:
-    iteraciones_simulacion = 1_000_000
+    iteraciones_simulacion = 10_000
     
     # Para una prueba rápida, puedes reducir el número de iteraciones:
     # iteraciones_simulacion = 10_000 

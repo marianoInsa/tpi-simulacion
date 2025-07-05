@@ -4,6 +4,7 @@ import time
 import numpy as np
 import math
 from datetime import datetime, date, timedelta
+import random
 # --- 0. DEFINICION DE CONSTANTES ---
 COSTO_VP = 300
 COSTO_SB = 600
@@ -27,16 +28,18 @@ def ejecutar_pruebas_completas(numeros, alpha=0.05):
     return pasa_medias and pasa_varianza and pasa_uniformidad and pasa_independencia
 
 # --- 3. GENERADOR MAESTRO AUTOMATIZADO  ---
-def generar_numeros_aprobados(cantidad, alpha=0.05):
-    intentos = 0
+def generar_numeros_aprobados(cantidad, alpha=0.05,verbose=False):
+    #intentos = 0
     while True:
-        intentos += 1
-        print(f"\rIntento #{intentos}: Generando y probando un nuevo conjunto de {cantidad} números...", end="")
-        semilla_dinamica = int(time.time() * 1000)
+        #intentos += 1
+        #if verbose:
+            #print(f"\rIntento #{intentos}: Generando y probando un nuevo conjunto de {cantidad} números...", end="")
+        semilla_dinamica = random.randint(10000, 99999)
         a, c, m = 16807, 0, 2**31 - 1
         numeros_candidatos = generador_nros_aleatorios(semilla_dinamica, a, c, m, cantidad)
         if ejecutar_pruebas_completas(numeros_candidatos, alpha):
-            print(f"\n¡Éxito! Se encontró un conjunto aprobado en el intento #{intentos}.")
+            #if verbose:
+                #print(f"\n¡Éxito! Se encontró un conjunto aprobado en el intento #{intentos}.")
             return numeros_candidatos
 
 # --- 4. NUEVAS FUNCIONES DE GENERACIÓN DE DEMANDA ---
