@@ -7,6 +7,7 @@ import random
 import multiprocessing
 import time
 from simulador import generar_numeros_aprobados
+from scipy.stats import t 
 # --- Las funciones originales no necesitan cambios ---
 
 def generador_nros_aleatorios(seed, a, c, m, n):
@@ -43,7 +44,7 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     precio_faltante = 3
     precio_sobrante = 7
     precio_venta = 10
-    alpha = 0.1
+    alpha = 0.05
 
     beneficios_obtenidos = []
 
@@ -71,7 +72,8 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     length = len(beneficios_obtenidos)
     beneficio_prom = sum(beneficios_obtenidos) / length
     stddev = math.sqrt(sum((x - beneficio_prom) ** 2 for x in beneficios_obtenidos) / (length - 1))
-    delta = stddev / math.sqrt(length * alpha)
+    t_critical = t.ppf(1 - alpha / 2, df=length - 1)
+    delta = t_critical * (stddev / math.sqrt(length))
     lower = beneficio_prom - delta
     upper = beneficio_prom + delta
     
@@ -113,7 +115,7 @@ def main():
     inicio_total = time.time()
     
     # Para la simulación real con 10 millones de iteraciones:
-    iteraciones_simulacion = 10_000
+    iteraciones_simulacion = 1_000
     
     # Para una prueba rápida, puedes reducir el número de iteraciones:
     # iteraciones_simulacion = 10_000 
