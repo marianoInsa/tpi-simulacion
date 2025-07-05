@@ -1,0 +1,107 @@
+from simulador import genera_demanda_diaria, COSTO_VP, COSTO_SB, BENEFICIO
+
+def simular_politica_produccion(
+        dias_anteriores: int,
+        cronograma_demanda: list[dict]
+) -> dict:
+    """
+    Simula una política de producción teniendo en cuenta el promedio de producción de los últimos `dias_anteriores` días.
+    Criterio: Los primeros dias se produce con la producción fija de los argumentos produccion_semana y produccion_finde.
+    Luego, se calcula el promedio de los últimos `dias_anteriores` días y se utiliza para la producción diaria.
+    LOS SOBRANTES DE AYER NO AFECTAN A LA PRODUCCION DE HOY, es indistinto!
+
+    Args:
+        dias_anteriores (int): El número de días a considerar para calcular el promedio de producción.
+        cronograma_demanda (list[dict]): La lista de diccionarios generada por el simulador,
+                                         que contiene la demanda y los detalles de cada día.
+
+    Returns:
+        dict: Un diccionario con los resultados finales de la simulación.
+    """
+
+    historial_demanda = []
+    # Acumuladores finales
+    ganancias_totales = 0
+    costo_total_desperdicio = 0
+    costo_total_faltantes = 0
+
+#    print("\n" + "="*60)
+#    print("INICIANDO SIMULACIÓN CON POLÍTICA DE PRODUCCIÓN CON PROMEDIO DE LOS ÚLTIMOS DÍAS")
+#    print(f"Producción igual al promedio de los últimos {(dias_anteriores)} días")
+#    print("="*60)
+
+    i = 0
+    # El bucle itera sobre la lista de diccionarios que tiene los datos de la demanda diaria.
+    for dia_simulado in cronograma_demanda:
+        
+        demanda_real = dia_simulado["demanda"]
+
+       # Si es el primer dia, utilizamos la producción fija
+        if i == 0:
+            tipo_dia_hoy = dia_simulado["tipo_dia"] # "Entre Semana" o "Fin de Semana"
+            # --- Seleccionar la producción del día de acuerdo al tipo de dia ---
+            if tipo_dia_hoy == "Fin de Semana":
+                produccion = 60 # Promedio [18-108] del fin de semana = 63. Para que sea múltiplo uso 60
+            else: # "Entre Semana"
+                produccion = 42 # Promedio [4-81] de la semana = 42,5
+        
+        elif i > 0 and i < dias_anteriores:
+        # Si son los primeros dias, utilizamos la producción fija
+            produccion = (
+                round((sum(historial_demanda) / len(historial_demanda)) / 6) * 6
+                if historial_demanda else demanda_real
+            )
+
+        # Si ya tenemos suficientes datos, calculamos el promedio
+        else:
+            produccion = round((sum(historial_demanda[-dias_anteriores:]) / dias_anteriores) / 6) * 6
+        # --- Calcular ventas, sobrantes y faltantes ---
+        sobrante = max(produccion - demanda_real, 0)
+        faltante = max(demanda_real - produccion, 0)
+        ventas = min(produccion, demanda_real)
+
+        # --- Calcular precios del dia ---
+        precio_venta = ventas * BENEFICIO
+        precio_sobrante = sobrante * COSTO_VP
+        precio_faltante = faltante * COSTO_SB
+
+        # ACTUALIZAR TOTALES
+        ganancias_totales += precio_venta
+        costo_total_desperdicio += precio_sobrante
+        costo_total_faltantes += precio_faltante
+
+        # Actualizar el historial de demanda
+        historial_demanda.append(demanda_real)
+        i += 1
+
+    # --- Resultados finales ---
+    costo_total = costo_total_desperdicio + costo_total_faltantes
+    resultado_neto = ganancias_totales - costo_total
+
+    return {
+        "ganancia_total": ganancias_totales,
+        "costo_desperdicio": costo_total_desperdicio,
+        "costo_faltantes": costo_total_faltantes,
+        "costo_total": costo_total,
+        "resultado_neto": resultado_neto
+    }
+
+# --- Bloque de ejecución de ejemplo ---
+if __name__ == "__main__":
+    n_dias = 30
+
+    # Define el promedio de días para la política de producción
+    dias_anteriores = 5
+
+    resultados = []
+    for i in range(1, 31):
+        # 1. Generamos el cronograma completo de demanda desde el simulador
+        cronograma_completo = genera_demanda_diaria(n_dias)
+        # 2. Ejecutamos la simulación con la nueva función y los nuevos parámetros
+        resultados.append(simular_politica_produccion(
+            dias_anteriores,
+            cronograma_completo
+        )) 
+    print("\nResultados de la simulación:")
+    for i, resultados in enumerate(resultados, start=1):
+        print(resultados["resultado_neto"])
