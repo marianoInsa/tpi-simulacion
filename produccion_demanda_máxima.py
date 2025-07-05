@@ -25,23 +25,25 @@ def simular_produccion_maxima(cronograma_demanda, N=5, produccion_inicial=60):
     demandas_weekday = []
     demandas_weekend = []
 
-    print("\n" + "="*60)
-    print(f"INICIANDO SIMULACIÓN CON CRITERIO: MÁXIMO DE LOS ÚLTIMOS {N} DÍAS (SEGÚN TIPO DE DÍA)")
-    print("="*60)
+    # print("\n" + "="*60)
+    # print(f"INICIANDO SIMULACIÓN CON CRITERIO: MÁXIMO DE LOS ÚLTIMOS {N} DÍAS (SEGÚN TIPO DE DÍA)")
+    # print("="*60)
 
     for i, dia in enumerate(cronograma_demanda):
         demanda_hoy = dia["demanda"]
         tipo_dia_hoy = dia["tipo_dia"]
 
-        # --- Determinar la producción de hoy según tipo de día ---
-        if tipo_dia_hoy == "Entre Semana":
-            historial = demandas_weekday
-        else:
-            historial = demandas_weekend
-
-        if len(historial) < N:
+        # Primeros N-1 dias ocupa produccion_inicial
+        if i < N:
             produccion_de_hoy = produccion_inicial
         else:
+            
+            # --- Determinar la producción de hoy según tipo de día ---
+            if tipo_dia_hoy == "Entre Semana":
+                historial = demandas_weekday
+            else:
+                historial = demandas_weekend
+
             produccion_de_hoy = max(historial[-N:])
 
         unidades_vendidas_hoy = 0
@@ -100,8 +102,8 @@ if __name__ == "__main__":
     
     resultados = simular_produccion_maxima(
         cronograma_demanda=cronograma,
-        N=5,
-        produccion_inicial=60
+        N=3,
+        produccion_inicial=30
     )
 
     print("\n" + "*"*40)
