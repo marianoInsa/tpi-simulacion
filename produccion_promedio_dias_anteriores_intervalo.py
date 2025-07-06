@@ -1,4 +1,5 @@
 import math
+import itertools
 from simulador import genera_demanda_diaria, COSTO_VP, COSTO_SB, BENEFICIO
 from scipy.stats import t 
 def simular_politica_produccion(
@@ -94,31 +95,63 @@ def simular_politica_produccion(
     resultado_neto = ganancias_totales - costo_total
 
     return resultado_neto
+
+def generar_replicas(cant_replicas, n_dias):
+    for __ in range(1, cant_replicas + 1):
+            # 1. Generamos el cronograma completo de demanda desde el simulador
+            cronograma_completo = genera_demanda_diaria(n_dias)
+            # 2. Ejecutamos la simulación con la nueva función y los nuevos parámetros
+            beneficios_obtenidos.append(simular_politica_produccion(
+                dias_anteriores,
+                cronograma_completo
+            ))
+    
+
 # --- Bloque de ejecución de ejemplo ---
 if __name__ == "__main__":
     n_dias = 30
+    cant_replicas = 10000
 
-    # Define el promedio de días para la política de producción
-    dias_anteriores = 5
 
-    beneficios_obtenidos = []
-    for i in range(1, 10001):
-        # 1. Generamos el cronograma completo de demanda desde el simulador
-        cronograma_completo = genera_demanda_diaria(n_dias)
-        # 2. Ejecutamos la simulación con la nueva función y los nuevos parámetros
-        beneficios_obtenidos.append(simular_politica_produccion(
-            dias_anteriores,
-            cronograma_completo
-        ))
+    intervalos = {}
 
-    alpha = 0.05
-    length = len(beneficios_obtenidos)
-    beneficio_prom = sum(beneficios_obtenidos) / length
-    stddev = math.sqrt(sum((x - beneficio_prom) ** 2 for x in beneficios_obtenidos) / (length - 1))
-    t_critical = t.ppf(1 - alpha / 2, df=length - 1)
-    delta = t_critical * (stddev / math.sqrt(length))
-    lower = beneficio_prom - delta
-    upper = beneficio_prom + delta
+    for i in range(1,29):
+        # Define el promedio de días para la política de producción
+        dias_anteriores = i
+        beneficios_obtenidos = []
+        for j in range(1, 10001):
+            # 1. Generamos el cronograma completo de demanda desde el simulador
+            cronograma_completo = genera_demanda_diaria(n_dias)
+            # 2. Ejecutamos la simulación con la nueva función y los nuevos parámetros
+            beneficios_obtenidos.append(simular_politica_produccion(
+                dias_anteriores,
+                cronograma_completo
+            ))
+        alpha = 0.05
+        length = len(beneficios_obtenidos)
+        beneficio_prom = sum(beneficios_obtenidos) / length
+        stddev = math.sqrt(sum((x - beneficio_prom) ** 2 for x in beneficios_obtenidos) / (length - 1))
+        t_critical = t.ppf(1 - alpha / 2, df=length - 1)
+        delta = t_critical * (stddev / math.sqrt(length))
+        lower = beneficio_prom - delta
+        upper = beneficio_prom + delta
 
-    print("Intervalo de confianza del 95% para el beneficio promedio:")
-    print(f"[{lower:.2f}, {upper:.2f}]")
+        intervalos[i] = {
+            "lower": lower,
+            "upper": upper,
+            "dias_anteriores": dias_anteriores
+        }
+
+        #print(f"Intervalo de Beneficio Prom con {dias_anteriores} dias anteriores: [{lower:.2f}, {upper:.2f}]")
+    
+    # Imprimir los resultados finales
+    top5 = sorted(
+        intervalos.values(),
+        key=lambda x: (x["lower"] + x["upper"]) / 2,
+        reverse=True
+    )[:5]
+    print("\nTOP 5 de intervalos con mayor beneficio promedio:")
+    for idx, res in enumerate(top5, 1):
+        print(f"{idx}. Días anteriores: {res['dias_anteriores']} | "
+              f"Promedio: {((res['lower'] + res['upper']) / 2):.2f} | "
+              f"IC: [{res['lower']:.2f}, {res['upper']:.2f}] (longitud {(res['upper'] - res['lower']):.2f}) ")
