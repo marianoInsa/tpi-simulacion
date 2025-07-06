@@ -6,9 +6,11 @@ import math
 from datetime import datetime, date, timedelta
 import random
 # --- 0. DEFINICION DE CONSTANTES ---
-COSTO_VP = 300
-COSTO_SB = 600
-BENEFICIO = 300
+#venta perdida
+COSTO_VP = 10
+#sobrante
+COSTO_SB = 7
+BENEFICIO = 10
 
 
 
@@ -90,16 +92,9 @@ def genera_demanda_diaria(dias_a_simular):
     Punto de entrada principal. Pide fechas, calcula duración, genera números
     y ejecuta la simulación día por día.
     """
-    print("="*60)
-    print("INICIO DE LA SIMULACIÓN DE STOCK DE EMPANADAS")
-    print("="*60)
 
     # --- OBTENER FECHAS Y CALCULAR DURACIÓN ---
     fecha_inicio = date.today()
-    fecha_fin = fecha_inicio + timedelta(days=dias_a_simular)
-    print(f"\nSimulación desde {fecha_inicio.strftime('%d/%m/%Y')} hasta {fecha_fin.strftime('%d/%m/%Y')}.")
-    print(f"Duración total: {dias_a_simular} días.")
-    
     # --- OBTENER NÚMEROS ALEATORIOS VALIDADOS ---
     nivel_confianza = 0.95
     alpha = 1 - nivel_confianza
@@ -109,11 +104,6 @@ def genera_demanda_diaria(dias_a_simular):
         print("No se pudo generar un conjunto de números aleatorios válidos. Abortando simulación.")
         return
 
-    # --- EJECUTAR LA SIMULACIÓN DÍA POR DÍA ---
-    print("\n" + "-"*60)
-    print("EJECUTANDO SIMULACIÓN DIARIA...")
-    print("-" * 60)
-    
     resultados_simulacion = []
     
     for i in range(dias_a_simular):
@@ -134,14 +124,6 @@ def genera_demanda_diaria(dias_a_simular):
             "demanda": demanda_generada
         }
         resultados_simulacion.append(dia_info)
-        
-        print(f"Día {dia_info['dia']:<3} ({dia_info['fecha']}) [{dia_info['tipo_dia']}]: "
-              f"r(i) = {dia_info['r(i)']} -> Demanda = {dia_info['demanda']}")
-
-    # --- FIN DE LA SIMULACIÓN ---
-    print("\n" + "="*60)
-    print("FIN DE LA SIMULACIÓN")
-    print("="*60)
     # Opcional: Mostrar un resumen final si lo deseas
     # print("\nResumen de resultados:")
     # for res in resultados_simulacion:
