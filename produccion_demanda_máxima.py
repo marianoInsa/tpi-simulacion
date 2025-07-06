@@ -44,7 +44,7 @@ def simular_produccion_maxima(cronograma_demanda, N=5, produccion_inicial=60):
             else:
                 historial = demandas_weekend
 
-            produccion_de_hoy = max(historial[-N:])
+            produccion_de_hoy = round(max(historial[-N:]) / 6) * 6
 
         unidades_vendidas_hoy = 0
         demanda_restante = demanda_hoy

@@ -36,7 +36,7 @@ def ejecutar_analisis(resultados_netos):
 
 if __name__ == "__main__":
     
-    num_corridas = 100
+    num_corridas = 100_000
     print(f"Ejecutando {num_corridas} simulaciones...")
     resultados_netos = []
     
@@ -45,5 +45,7 @@ if __name__ == "__main__":
         cronograma = genera_demanda_diaria(dias_a_simular)
         resultado = simular_produccion_maxima(cronograma, N=3, produccion_inicial=60)
         resultados_netos.append(resultado['resultado_neto'])
+        print(f"Simulación {i+1}/{num_corridas}: Resultado Neto = {resultado['resultado_neto']}")
+        print("\n" + "*"*40)
 
     ejecutar_analisis(resultados_netos)

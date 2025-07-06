@@ -1,33 +1,35 @@
 # generador_congruencial_mixtov2_optimizado.py
 
-from functools import reduce, partial
+from functools import partial
 import csv
 import math
-import random
 import multiprocessing
 import time
 from simulador import generar_numeros_aprobados
 from scipy.stats import t 
+from datetime import date, timedelta
 # --- Las funciones originales no necesitan cambios ---
 
-def generador_nros_aleatorios(seed, a, c, m, n):
-    """
-    Genera una lista de números aleatorios utilizando el método congruencial mixto.
-    """
-    numeros_aleatorios = []
-    x = seed
-    for _ in range(n):
-        x = (a * x + c) % m
-        numeros_aleatorios.append(round(x / m, 4))
-    return numeros_aleatorios
-
-def generador_weekday(nros):
+def generador_weekday(n_dias):
+    nros = generar_numeros_aprobados(n_dias)
     """formula: 77*x+4"""
     return [math.floor(77 * x) + 4 for x in nros]
 
-def generador_weekend(nros):
+def generador_weekend(n_dias):
+    nros = generar_numeros_aprobados(n_dias)
     """formula: 90x+18"""
     return [math.floor(90 * x) + 18 for x in nros]
+
+def count_weekend_days_in_next_30():
+    today = date.today()
+    weekend_days = 0
+
+    for i in range(30):
+        current_day = today + timedelta(days=i)
+        if current_day.weekday() in (4, 5, 6):  # Friday=4, Saturday=5, Sunday=6
+            weekend_days += 1
+
+    return weekend_days
 
 # --- PASO 1: Crear una función "trabajadora" para un solo valor de 'p' ---
 # Esta función contiene la lógica del bucle de simulaciones.
@@ -39,9 +41,10 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     # Parámetros del generador (se pueden pasar como argumentos si es necesario)
 
     n_dias = 30  # n es el número de días a simular por iteración
+    n_dias = 30 - count_weekend_days_in_next_30()
 
     # Parámetros del modelo de negocio
-    precio_faltante = 3
+    precio_faltante = 10
     precio_sobrante = 7
     precio_venta = 10
     alpha = 0.05
@@ -49,23 +52,24 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
     beneficios_obtenidos = []
 
     for _ in range(iteraciones):
-        dias_demanda = generar_numeros_aprobados(n_dias)
-        unidades_demanda = generador_var_al(dias_demanda)
+        unidades_demanda = generador_var_al(n_dias)
 
         unidades_sobrante = 0
         unidades_faltante = 0
+        unidades_venta = 0
 
         for d in unidades_demanda:
             if d < p:
                 unidades_sobrante += p - d
-            elif d > p:
+                unidades_venta += d
+            else:
                 unidades_faltante += d - p
+                unidades_venta += p
         
-        unidades_d_total = sum(unidades_demanda)
-        beneficio_ideal = unidades_d_total * precio_venta
+        ventas = unidades_venta * precio_venta
         costo_f = unidades_faltante * precio_faltante
         costo_s = unidades_sobrante * precio_sobrante
-        beneficio = beneficio_ideal - costo_f - costo_s
+        beneficio = ventas - costo_f - costo_s
         beneficios_obtenidos.append(beneficio)
 
     # Calcular estadísticas finales para este 'p'
@@ -115,7 +119,7 @@ def main():
     inicio_total = time.time()
     
     # Para la simulación real con 10 millones de iteraciones:
-    iteraciones_simulacion = 1_000
+    iteraciones_simulacion = 10_000
     
     # Para una prueba rápida, puedes reducir el número de iteraciones:
     # iteraciones_simulacion = 10_000 
@@ -127,10 +131,11 @@ def main():
                                  #generador_var_al=generador_weekday, nombre_archivo='resultados_weekday.csv')
 
     # --- Simulación para Weekend ---
-    produccion_weekend = [x*6 for x in range(1,19)]
+    # produccion_weekend = [x*6 for x in range(1,19)]
+    produccion_weekday = [x*6 for x in range(1,13)]
     # produccion_weekend = [x for x in range(41, 48)] # Para pruebas
-    ejecutar_simulacion_paralela(produccion_weekend, iteraciones=iteraciones_simulacion, 
-                                 generador_var_al=generador_weekend, nombre_archivo='resultados_weekend.csv')
+    ejecutar_simulacion_paralela(produccion_weekday, iteraciones=iteraciones_simulacion, 
+                                 generador_var_al=generador_weekday, nombre_archivo='resultados_weekend.csv')
 
     fin_total = time.time()
     print(f"\nTodas las simulaciones terminaron en {(fin_total - inicio_total) / 60:.2f} minutos.")
