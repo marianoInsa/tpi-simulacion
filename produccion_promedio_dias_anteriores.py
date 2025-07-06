@@ -19,7 +19,8 @@ def simular_politica_produccion(
         dict: Un diccionario con los resultados finales de la simulación.
     """
 
-    historial_demanda = []
+    historial_demanda_dia_semana = []
+    historial_demanda_fin_de_semana = []
     # Acumuladores finales
     ganancias_totales = 0
     costo_total_desperdicio = 0
@@ -30,31 +31,46 @@ def simular_politica_produccion(
 #    print(f"Producción igual al promedio de los últimos {(dias_anteriores)} días")
 #    print("="*60)
 
-    i = 0
     # El bucle itera sobre la lista de diccionarios que tiene los datos de la demanda diaria.
     for dia_simulado in cronograma_demanda:
         
         demanda_real = dia_simulado["demanda"]
-
-       # Si es el primer dia, utilizamos la producción fija
-        if i == 0:
-            tipo_dia_hoy = dia_simulado["tipo_dia"] # "Entre Semana" o "Fin de Semana"
-            # --- Seleccionar la producción del día de acuerdo al tipo de dia ---
-            if tipo_dia_hoy == "Fin de Semana":
-                produccion = 60 # Promedio [18-108] del fin de semana = 63. Para que sea múltiplo uso 60
-            else: # "Entre Semana"
-                produccion = 42 # Promedio [4-81] de la semana = 42,5
+        tipo_dia_hoy = dia_simulado["tipo_dia"] # "Entre Semana" o "Fin de Semana"
+       
+        if tipo_dia_hoy == "Fin de Semana":    
+            # Si es el primer dia, utilizamos la producción fija
+            if len(historial_demanda_fin_de_semana) == 0:
+                produccion = 60 # Promedio [18-108] del fin de semana = 63. Para que sea múltiplo uso 60  
+                historial_demanda_fin_de_semana.append(demanda_real)            
+            
+            elif len(historial_demanda_fin_de_semana) > 0 and len(historial_demanda_fin_de_semana) < dias_anteriores:
+                # Si son los primeros dias, utilizamos el promedio de la cantidad de dias actuales
+                produccion = (
+                round((sum(historial_demanda_fin_de_semana) / len(historial_demanda_fin_de_semana)) / 6) * 6
+                if historial_demanda_fin_de_semana else demanda_real)
+                historial_demanda_fin_de_semana.append(demanda_real)
+            # Si ya tenemos suficientes datos, calculamos el promedio
+            else:
+                produccion = round((sum(historial_demanda_fin_de_semana[-dias_anteriores:]) / dias_anteriores) / 6) * 6
+                historial_demanda_fin_de_semana.append(demanda_real)
         
-        elif i > 0 and i < dias_anteriores:
-        # Si son los primeros dias, utilizamos la producción fija
-            produccion = (
-                round((sum(historial_demanda) / len(historial_demanda)) / 6) * 6
-                if historial_demanda else demanda_real
-            )
-
-        # Si ya tenemos suficientes datos, calculamos el promedio
-        else:
-            produccion = round((sum(historial_demanda[-dias_anteriores:]) / dias_anteriores) / 6) * 6
+        else: # "Entre Semana"
+            # Si es el primer dia, utilizamos la producción fija
+            if len(historial_demanda_dia_semana) == 0:           
+                produccion = 42 # Promedio [4-81] de la semana = 42,5
+                historial_demanda_dia_semana.append(demanda_real)
+            
+            elif len(historial_demanda_dia_semana) > 0 and len(historial_demanda_dia_semana) < dias_anteriores:
+            # Si son los primeros dias, utilizamos el promedio de los dias actuales
+                produccion = (
+                round((sum(historial_demanda_dia_semana) / len(historial_demanda_dia_semana)) / 6) * 6
+                if historial_demanda_dia_semana else demanda_real)
+                historial_demanda_dia_semana.append(demanda_real)
+            # Si ya tenemos suficientes datos, calculamos el promedio
+            else:
+                produccion = round((sum(historial_demanda_dia_semana[-dias_anteriores:]) / dias_anteriores) / 6) * 6
+                historial_demanda_dia_semana.append(demanda_real)
+        
         # --- Calcular ventas, sobrantes y faltantes ---
         sobrante = max(produccion - demanda_real, 0)
         faltante = max(demanda_real - produccion, 0)
@@ -70,9 +86,6 @@ def simular_politica_produccion(
         costo_total_desperdicio += precio_sobrante
         costo_total_faltantes += precio_faltante
 
-        # Actualizar el historial de demanda
-        historial_demanda.append(demanda_real)
-        i += 1
 
     # --- Resultados finales ---
     costo_total = costo_total_desperdicio + costo_total_faltantes
@@ -91,7 +104,7 @@ if __name__ == "__main__":
     n_dias = 30
 
     # Define el promedio de días para la política de producción
-    dias_anteriores = 5
+    dias_anteriores = 3
 
     # 1. Generamos el cronograma completo de demanda desde el simulador
     cronograma_completo = genera_demanda_diaria(n_dias)
