@@ -29,6 +29,7 @@ def simular_politica_produccion(
     ganancias_totales = 0
     costo_total_desperdicio = 0
     costo_total_faltantes = 0
+    sobrante_anterior = 0
 
 #    print("\n" + "="*60)
 #    print("INICIANDO SIMULACIÓN CON POLÍTICA DE PRODUCCIÓN CON PROMEDIO DE LOS ÚLTIMOS DÍAS")
@@ -86,20 +87,27 @@ def simular_politica_produccion(
             produccion_semana_acumulado.append(produccion_semana)
 
         
+                # --- Usar sobrante del día anterior ---
+        demanda_restante = demanda_real
+        usado_sobrante_anterior = min(demanda_restante, sobrante_anterior) # calcula cuanto sobrantes de ayer usa hoy
+        demanda_restante -= usado_sobrante_anterior # resta de la demanda de hoy lo que usó de sobrante de ayer
+
         # --- Calcular ventas, sobrantes y faltantes ---
-        sobrante = max(produccion - demanda_real, 0)
-        faltante = max(demanda_real - produccion, 0)
-        ventas = min(produccion, demanda_real)
+        ventas_produccion = min(produccion, demanda_restante) # calcula cuanto se vende hoy con la demanda restante
+        faltante = max(demanda_restante - produccion, 0) # calcula si hay faltante de producción hoy
+        sobrante_nuevo = max(produccion - demanda_restante, 0) # calcula el sobrante nuevo de hoy
 
-        # --- Calcular precios del dia ---
-        precio_venta = ventas * BENEFICIO
-        precio_sobrante = sobrante * COSTO_VP
-        precio_faltante = faltante * COSTO_SB
+        ventas = usado_sobrante_anterior + ventas_produccion # suma lo que se vendió hoy con lo que se usó de sobrante de ayer
 
-        # ACTUALIZAR TOTALES
-        ganancias_totales += precio_venta
-        costo_total_desperdicio += precio_sobrante
-        costo_total_faltantes += precio_faltante
+        # --- Costos ---
+        desperdicio_de_sobrante = sobrante_anterior - usado_sobrante_anterior # calcula el sobrante que se desperdicia hoy
+        costo_total_desperdicio += desperdicio_de_sobrante * COSTO_VP # calcula el costo del sobrante desperdiciado hoy
+        costo_total_faltantes += faltante * COSTO_SB    # calcula el costo de los faltantes de hoy
+        ganancias_totales += ventas * BENEFICIO # calcula las ganancias de hoy
+
+        # El sobrante de hoy será el que se pueda usar mañana
+        sobrante_anterior = sobrante_nuevo
+
 
         # Guardo la producción del día
         producciones[idx] = {
