@@ -1,7 +1,9 @@
 # VERSIÓN CON PRODUCCIÓN DIFERENCIADA
 # Asumiendo que las constantes están en un archivo config.py o en simulador.py
 from simulador import genera_demanda_diaria, COSTO_VP, COSTO_SB, BENEFICIO
-
+import itertools
+from scipy.stats import t 
+import math
 def simular_politica_produccion(
     produccion_semana: int, 
     produccion_finde: int, 
@@ -30,10 +32,10 @@ def simular_politica_produccion(
     # Variable de estado: representa los sobrantes de ayer
     sobrantes_de_ayer = 0
 
-    print("\n" + "="*60)
-    print("INICIANDO SIMULACIÓN CON POLÍTICA DE PRODUCCIÓN DIFERENCIADA")
-    print(f"Producción L-J: {produccion_semana} | Producción V-S-D: {produccion_finde}")
-    print("="*60)
+    #print("\n" + "="*60)
+    #print("INICIANDO SIMULACIÓN CON POLÍTICA DE PRODUCCIÓN DIFERENCIADA")
+    #print(f"Producción L-J: {produccion_semana} | Producción V-S-D: {produccion_finde}")
+    #print("="*60)
 
     # El bucle itera sobre la lista de diccionarios que tiene los datos de la demanda diaria y el dia de la semana.
     for dia_simulado in cronograma_demanda:
@@ -93,36 +95,60 @@ def simular_politica_produccion(
         "resultado_neto": resultado_neto
     }
 
+def generar_replicas(cant_replicas,cant_dias):
+    produccion = list(itertools.product([x*6 for x in range(1,20)], repeat=2))
+    acum_benef = {combi: [] for combi in produccion}
+        
+    for _ in range(cant_replicas):
+        demanda_diaria = genera_demanda_diaria(cant_dias)
+        for combi in produccion:
+            resultado = simular_politica_produccion(combi[0],combi[1],demanda_diaria)
+            acum_benef[combi].append(resultado["resultado_neto"])
+    return acum_benef
 
+def generar_intervalos(cant_replicas,acum_benef,alpha = 0.05):
+    produccion = list(itertools.product([x*6 for x in range(1, 20)], repeat=2))
+    result = {
+    combi: {
+        'beneficio_prom': 0,
+        'stddev': 0,
+        'delta': 0,
+        'lower': 0,
+        'upper': 0
+    } for combi in produccion}
+    
+    for combi in acum_benef:
+        result[combi]['beneficio_prom'] = sum(acum_benef[combi]) / cant_replicas
+        result[combi]['stddev'] = math.sqrt(sum((x - result[combi]['beneficio_prom']) ** 2 for x in acum_benef[combi]) / (cant_replicas - 1))
+        t_critical = t.ppf(1 - alpha / 2, df=cant_replicas - 1)
+        result[combi]['delta'] = t_critical * (result[combi]['stddev'] / math.sqrt(cant_replicas))
+        result[combi]['lower'] = result[combi]['beneficio_prom'] - result[combi]['delta']
+        result[combi]['upper'] = result[combi]['beneficio_prom'] + result[combi]['delta']
+        
+    return result
+
+def mostrar_resultados(resultados_intervalos):
+    lista_ordenada = []
+    for key in resultados_intervalos:
+        dic_aux = {
+            'produccion':f'semama {key[0]}, finde {key[1]}',
+            'beneficio_prom':resultados_intervalos[key]['beneficio_prom'] ,
+            'stddev': resultados_intervalos[key]['stddev'],
+            'delta': resultados_intervalos[key]['delta'],
+            'lower': resultados_intervalos[key]['lower'],
+            'upper': resultados_intervalos[key]['upper']
+        }
+        lista_ordenada.append(dic_aux)
+    lista_ordenada.sort(key=lambda x: -x['beneficio_prom'])
+    print("\n--- Top 5 mejores valores de 'p' (combinando Weekday y Weekend) ---\n")
+    for i, lista in enumerate(lista_ordenada[:5], start=1):
+        intervalo_longitud = lista['upper'] - lista['lower']
+        print(f"{i}.  p = {lista['produccion']:<3} | Beneficio Prom: {lista['beneficio_prom']:>9.2f} | "
+              f"Intervalo de Confianza = [{lista['lower']:.2f}, {lista['upper']:.2f}] (longitud = {intervalo_longitud:.2f})")
 # --- Bloque de ejecución de ejemplo ---
 if __name__ == "__main__":
     dias_a_simular = 30
-    
-    # Define los dos niveles de producción que quieres probar
-    produccion_dias_semana = 50
-    produccion_fines_semana = 70
-
-    # 1. Generamos el cronograma completo de demanda desde el simulador
-    cronograma_completo = genera_demanda_diaria(dias_a_simular)
-    
-    # 2. Ejecutamos la simulación con la nueva función y los nuevos parámetros
-    resultados = simular_politica_produccion(
-        produccion_semana=produccion_dias_semana, 
-        produccion_finde=produccion_fines_semana,
-        cronograma_demanda=cronograma_completo
-    )
-
-    print("\n" + "*"*40)
-    print("      RESULTADOS FINALES DE LA SIMULACIÓN")
-    print("*"*40)
-    print(f"Período simulado: {dias_a_simular} días")
-    print(f"Política de Producción:")
-    print(f"  - Días de Semana (L-J): {produccion_dias_semana} unidades/día")
-    print(f"  - Fines de Semana (V-S-D): {produccion_fines_semana} unidades/día")
-    print(f"Ganancia Bruta Total: ${resultados['ganancia_total']:,.2f}")
-    print(f"Costo por Desperdicio: ${resultados['costo_desperdicio']:,.2f}")
-    print(f"Costo por Ventas Perdidas: ${resultados['costo_faltantes']:,.2f}")
-    print(f"Costo Total Combinado: ${resultados['costo_total']:,.2f}")
-    print("-" * 40)
-    print(f"RESULTADO NETO (Ganancia - Costo): ${resultados['resultado_neto']:,.2f}")
-    print("*"*40)
+    cant_replicas = 10000
+    beneficios_acumulados = generar_replicas(cant_replicas,dias_a_simular)
+    lista_intervalos = generar_intervalos(cant_replicas,beneficios_acumulados)
+    mostrar_resultados(lista_intervalos)
