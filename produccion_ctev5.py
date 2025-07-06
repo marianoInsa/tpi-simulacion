@@ -21,7 +21,7 @@ def generador_weekend(n_dias):
     return [math.floor(90 * x) + 18 for x in nros]
 
 def count_weekend_days_in_next_30():
-    today = date.today()
+    today = date(2025,7,6)
     weekend_days = 0
 
     for i in range(30):

@@ -94,7 +94,7 @@ def genera_demanda_diaria(dias_a_simular):
     """
 
     # --- OBTENER FECHAS Y CALCULAR DURACIÓN ---
-    fecha_inicio = date.today()
+    fecha_inicio = date(2025,7,6)
     # --- OBTENER NÚMEROS ALEATORIOS VALIDADOS ---
     nivel_confianza = 0.95
     alpha = 1 - nivel_confianza
