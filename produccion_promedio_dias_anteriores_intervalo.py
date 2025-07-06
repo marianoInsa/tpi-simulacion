@@ -21,6 +21,8 @@ def simular_politica_produccion(
         dict: Un diccionario con los resultados finales de la simulación.
     """
     producciones = {}
+    produccion_finde_acumulado = []
+    produccion_semana_acumulado = []
     historial_demanda_dia_semana = []
     historial_demanda_fin_de_semana = []
     # Acumuladores finales
@@ -60,6 +62,7 @@ def simular_politica_produccion(
                 historial_demanda_fin_de_semana.append(demanda_real)
                 produccion_finde = produccion
         
+            produccion_finde_acumulado.append(produccion_finde)
         else: # "Entre Semana"
             # Si es el primer dia, utilizamos la producción fija
             if len(historial_demanda_dia_semana) == 0:           
@@ -79,7 +82,9 @@ def simular_politica_produccion(
                 produccion = round((sum(historial_demanda_dia_semana[-dias_anteriores:]) / dias_anteriores) / 6) * 6
                 historial_demanda_dia_semana.append(demanda_real)
                 produccion_semana = produccion
-        
+
+            produccion_semana_acumulado.append(produccion_semana)
+
         
         # --- Calcular ventas, sobrantes y faltantes ---
         sobrante = max(produccion - demanda_real, 0)
@@ -98,8 +103,8 @@ def simular_politica_produccion(
 
         # Guardo la producción del día
         producciones[idx] = {
-            "produccion_finde": produccion_finde,
-            "produccion_semana": produccion_semana
+            "produccion_finde_acumulado": produccion_finde_acumulado,
+            "produccion_semana_acumulado": produccion_semana_acumulado
         }
 
     # --- Resultados finales ---
@@ -108,8 +113,11 @@ def simular_politica_produccion(
 
     return {
         "resultado_neto": resultado_neto,
-        "produccion_finde_prom": sum(produccion["produccion_finde"] for produccion in producciones.values()) / len(producciones),
-        "produccion_semana_prom": sum(produccion["produccion_semana"] for produccion in producciones.values()) / len(producciones)
+        "produccion_finde_prom": (sum(itertools.chain.from_iterable(produccion["produccion_finde_acumulado"] for produccion in producciones.values())) / 
+                                  max(1, sum(len(produccion["produccion_finde_acumulado"]) for produccion in producciones.values())) 
+        ),
+        "produccion_semana_prom": (sum(itertools.chain.from_iterable(produccion["produccion_semana_acumulado"] for produccion in producciones.values())) / 
+                                   max(1, sum(len(produccion["produccion_semana_acumulado"]) for produccion in producciones.values())))
     }
 
 def generar_replicas(cant_replicas, n_dias, dias_anteriores):
