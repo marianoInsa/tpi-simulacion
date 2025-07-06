@@ -61,14 +61,15 @@ def simular_para_un_p(p, iteraciones, generador_var_al):
         for d in unidades_demanda:
             if d < p:
                 unidades_sobrante += p - d
-            elif d > p:
+                unidades_venta += d
+            else:
                 unidades_faltante += d - p
-            unidades_venta += min(d, p)
+                unidades_venta += p
         
-        beneficio_ideal = unidades_venta * precio_venta
+        ventas = unidades_venta * precio_venta
         costo_f = unidades_faltante * precio_faltante
         costo_s = unidades_sobrante * precio_sobrante
-        beneficio = beneficio_ideal - costo_f - costo_s
+        beneficio = ventas - costo_f - costo_s
         beneficios_obtenidos.append(beneficio)
 
     # Calcular estadísticas finales para este 'p'
