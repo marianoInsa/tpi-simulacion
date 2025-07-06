@@ -20,7 +20,7 @@ def simular_politica_produccion(
     Returns:
         dict: Un diccionario con los resultados finales de la simulación.
     """
-
+    producciones = {}
     historial_demanda_dia_semana = []
     historial_demanda_fin_de_semana = []
     # Acumuladores finales
@@ -34,8 +34,9 @@ def simular_politica_produccion(
 #    print("="*60)
 
     # El bucle itera sobre la lista de diccionarios que tiene los datos de la demanda diaria.
-    for dia_simulado in cronograma_demanda:
-        
+    for idx, dia_simulado in enumerate(cronograma_demanda):
+        produccion_finde = 0
+        produccion_semana = 0
         demanda_real = dia_simulado["demanda"]
         tipo_dia_hoy = dia_simulado["tipo_dia"] # "Entre Semana" o "Fin de Semana"
        
@@ -43,7 +44,8 @@ def simular_politica_produccion(
             # Si es el primer dia, utilizamos la producción fija
             if len(historial_demanda_fin_de_semana) == 0:
                 produccion = 60 # Promedio [18-108] del fin de semana = 63. Para que sea múltiplo uso 60  
-                historial_demanda_fin_de_semana.append(demanda_real)            
+                historial_demanda_fin_de_semana.append(demanda_real)
+                produccion_finde = 60            
             
             elif len(historial_demanda_fin_de_semana) > 0 and len(historial_demanda_fin_de_semana) < dias_anteriores:
                 # Si son los primeros dias, utilizamos el promedio de la cantidad de dias actuales
@@ -51,16 +53,19 @@ def simular_politica_produccion(
                 round((sum(historial_demanda_fin_de_semana) / len(historial_demanda_fin_de_semana)) / 6) * 6
                 if historial_demanda_fin_de_semana else demanda_real)
                 historial_demanda_fin_de_semana.append(demanda_real)
+                produccion_finde = produccion
             # Si ya tenemos suficientes datos, calculamos el promedio
             else:
                 produccion = round((sum(historial_demanda_fin_de_semana[-dias_anteriores:]) / dias_anteriores) / 6) * 6
                 historial_demanda_fin_de_semana.append(demanda_real)
+                produccion_finde = produccion
         
         else: # "Entre Semana"
             # Si es el primer dia, utilizamos la producción fija
             if len(historial_demanda_dia_semana) == 0:           
                 produccion = 42 # Promedio [4-81] de la semana = 42,5
                 historial_demanda_dia_semana.append(demanda_real)
+                produccion_semana = 42
             
             elif len(historial_demanda_dia_semana) > 0 and len(historial_demanda_dia_semana) < dias_anteriores:
             # Si son los primeros dias, utilizamos el promedio de los dias actuales
@@ -68,10 +73,12 @@ def simular_politica_produccion(
                 round((sum(historial_demanda_dia_semana) / len(historial_demanda_dia_semana)) / 6) * 6
                 if historial_demanda_dia_semana else demanda_real)
                 historial_demanda_dia_semana.append(demanda_real)
+                produccion_semana = produccion
             # Si ya tenemos suficientes datos, calculamos el promedio
             else:
                 produccion = round((sum(historial_demanda_dia_semana[-dias_anteriores:]) / dias_anteriores) / 6) * 6
                 historial_demanda_dia_semana.append(demanda_real)
+                produccion_semana = produccion
         
         
         # --- Calcular ventas, sobrantes y faltantes ---
@@ -89,25 +96,41 @@ def simular_politica_produccion(
         costo_total_desperdicio += precio_sobrante
         costo_total_faltantes += precio_faltante
 
+        # Guardo la producción del día
+        producciones[idx] = {
+            "produccion_finde": produccion_finde,
+            "produccion_semana": produccion_semana
+        }
 
     # --- Resultados finales ---
     costo_total = costo_total_desperdicio + costo_total_faltantes
     resultado_neto = ganancias_totales - costo_total
 
-    return resultado_neto
+    return {
+        "resultado_neto": resultado_neto,
+        "produccion_finde_prom": sum(produccion["produccion_finde"] for produccion in producciones.values()) / len(producciones),
+        "produccion_semana_prom": sum(produccion["produccion_semana"] for produccion in producciones.values()) / len(producciones)
+    }
 
 def generar_replicas(cant_replicas, n_dias, dias_anteriores):
-    beneficios_obtenidos = []
     beneficio_prom = {}
-    for i in range(1, dias_anteriores + 1):
+    for i in range(1, dias_anteriores, 6):
+        beneficios_obtenidos = []
+        producciones_finde = []
+        producciones_semana = []
         for _ in range(cant_replicas):
                 # 1. Generamos el cronograma completo de demanda desde el simulador
                 cronograma_completo = genera_demanda_diaria(n_dias)
                 # 2. Ejecutamos la simulación con la nueva función y los nuevos parámetros
-                beneficios_obtenidos.append(simular_politica_produccion(i, cronograma_completo))
+                resultado = simular_politica_produccion(i, cronograma_completo)
+                beneficios_obtenidos.append(resultado["resultado_neto"])
+                producciones_finde.append(resultado["produccion_finde_prom"])
+                producciones_semana.append(resultado["produccion_semana_prom"])
         beneficio_prom[i] = {
             "beneficios_obtenidos": beneficios_obtenidos,
             "beneficio_promedio": sum(beneficios_obtenidos) / len(beneficios_obtenidos),
+            "produccion_finde_promedio": sum(producciones_finde) / len(producciones_finde),
+            "produccion_semana_promedio": sum(producciones_semana) / len(producciones_semana),
             "dias_anteriores": i
         }
     return beneficio_prom
@@ -126,11 +149,14 @@ def generar_intervalos(beneficios_acumulados):
         delta = t_critical * (stddev / math.sqrt(length))
         lower = beneficio_prom - delta
         upper = beneficio_prom + delta
-
+        produccion_finde_promedio = beneficios_acumulados[prom]["produccion_finde_promedio"]
+        produccion_semana_promedio = beneficios_acumulados[prom]["produccion_semana_promedio"]
         intervalos[i] = {
             "lower": lower,
             "upper": upper,
-            "dias_anteriores": dias_anteriores
+            "dias_anteriores": dias_anteriores,
+            "produccion_finde_promedio": produccion_finde_promedio,
+            "produccion_semana_promedio": produccion_semana_promedio
         }
         i += 1
     return intervalos
@@ -146,13 +172,15 @@ def mostrar_resultados(lista_intervalos):
     for idx, res in enumerate(top5, 1):
         print(f"{idx}. Días anteriores: {res['dias_anteriores']} | "
               f"Promedio: {((res['lower'] + res['upper']) / 2):.2f} | "
-              f"IC: [{res['lower']:.2f}, {res['upper']:.2f}] (longitud {(res['upper'] - res['lower']):.2f}) ")
+              f"IC: [{res['lower']:.2f}, {res['upper']:.2f}] (longitud {(res['upper'] - res['lower']):.2f}) | "
+              f"Prod. semana: {res['produccion_semana_promedio']:.2f} | "
+              f"Prod. finde: {res['produccion_finde_promedio']:.2f}")
 
 # --- Bloque de ejecución de ejemplo ---
 if __name__ == "__main__":
     n_dias = 30
     cant_replicas = 10000
-    dias_anteriores = 29
+    dias_anteriores = 30
     beneficios_acumulados = generar_replicas(cant_replicas, n_dias, dias_anteriores)
     lista_intervalos = generar_intervalos(beneficios_acumulados)
     mostrar_resultados(lista_intervalos)
