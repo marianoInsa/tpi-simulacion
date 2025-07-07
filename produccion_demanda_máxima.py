@@ -1,3 +1,5 @@
+import math
+from scipy.stats import t
 from simulador import genera_demanda_diaria, COSTO_VP, COSTO_SB, BENEFICIO
 
 def simular_produccion_maxima(cronograma_demanda, N=5, produccion_inicial=60):
@@ -96,25 +98,50 @@ def simular_produccion_maxima(cronograma_demanda, N=5, produccion_inicial=60):
 
 
 if __name__ == "__main__":
-    dias_a_simular = 30
+    # dias_a_simular = 30
 
-    cronograma = genera_demanda_diaria(dias_a_simular)
+    # cronograma = genera_demanda_diaria(dias_a_simular)
     
-    resultados = simular_produccion_maxima(
-        cronograma_demanda=cronograma,
-        N=3,
-        produccion_inicial=30
-    )
+    # resultados = simular_produccion_maxima(
+    #     cronograma_demanda=cronograma,
+    #     N=3,
+    #     produccion_inicial=30
+    # )
 
-    print("\n" + "*"*40)
-    print("      RESULTADOS FINALES DE LA SIMULACIÓN")
-    print("*"*40)
-    print(f"Período simulado: {dias_a_simular} días")
-    print(f"Criterio: Producción igual al máximo de los últimos 5 días")
-    print(f"Ganancia Bruta Total: ${resultados['ganancia_total']:,.2f}")
-    print(f"Costo por Desperdicio: ${resultados['costo_desperdicio']:,.2f}")
-    print(f"Costo por Ventas Perdidas: ${resultados['costo_faltantes']:,.2f}")
-    print(f"Costo Total Combinado: ${resultados['costo_total']:,.2f}")
-    print("-" * 40)
-    print(f"RESULTADO NETO (Ganancia - Costo): ${resultados['resultado_neto']:,.2f}")
-    print("*"*40)
+    # print("\n" + "*"*40)
+    # print("      RESULTADOS FINALES DE LA SIMULACIÓN")
+    # print("*"*40)
+    # print(f"Período simulado: {dias_a_simular} días")
+    # print(f"Criterio: Producción igual al máximo de los últimos 5 días")
+    # print(f"Ganancia Bruta Total: ${resultados['ganancia_total']:,.2f}")
+    # print(f"Costo por Desperdicio: ${resultados['costo_desperdicio']:,.2f}")
+    # print(f"Costo por Ventas Perdidas: ${resultados['costo_faltantes']:,.2f}")
+    # print(f"Costo Total Combinado: ${resultados['costo_total']:,.2f}")
+    # print("-" * 40)
+    # print(f"RESULTADO NETO (Ganancia - Costo): ${resultados['resultado_neto']:,.2f}")
+    # print("*"*40)
+  dias_a_simular = 30
+  num_corridas = 10_000
+  beneficios_obtenidos = []
+  alpha = 0.05
+
+  N = [2, 3, 4, 5, 6]
+  for n in N:
+      for i in range(num_corridas):
+          cronograma = genera_demanda_diaria(dias_a_simular)
+          resultados = simular_produccion_maxima(
+              cronograma_demanda=cronograma,
+              N=n,
+              produccion_inicial=30
+          )
+          beneficios_obtenidos.append(resultados['resultado_neto'])
+      
+      length = len(beneficios_obtenidos)
+      beneficio_prom = sum(beneficios_obtenidos) / length
+      stddev = math.sqrt(sum((x - beneficio_prom) ** 2 for x in beneficios_obtenidos) / (length - 1))
+      t_critical = t.ppf(1 - alpha / 2, df=length - 1)
+      delta = t_critical * (stddev / math.sqrt(length))
+      lower = beneficio_prom - delta
+      upper = beneficio_prom + delta
+
+      print(f"N = {n} | Beneficio Promedio: {beneficio_prom:.2f} | IC: [{lower:.2f}, {upper:.2f}] | Longitud: {upper - lower:.2f}")
