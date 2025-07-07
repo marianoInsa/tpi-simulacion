@@ -1,0 +1,7 @@
+nombre_criterio,beneficio_promedio,delta,beneficio_minimo,beneficio_maximo,longitud_intervalo
+constante,879511,4154,875 357,883 665,8308
+constante + sobrantes,1 319 504,1439,1 316 627,1 322 381,2878
+stock inicial constante,1 394 362,403,1 393 959,1 394 765,806
+promedio de demanda ultimos dias,1 153 329,3204,1 150 126,1 156 533,6408
+maximo de demanda ultimos dias,1 098 143,947,1 097 196,1 099 090,1894
+constante + demanda ultimos dias,1 138 327,1272,1 137 060,1 139 594,2534
